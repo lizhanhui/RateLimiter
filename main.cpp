@@ -61,6 +61,18 @@ public:
                 return;
             }
 
+            // Try to reuse previous under-utilized sliced quota
+            for (int j = 1; j < PARTITION / 2; ++j) {
+                int index = idx - j;
+                if (idx < 0) {
+                    idx += PARTITION;
+                }
+                if (permits_[index] > 0) {
+                    --permits_[index];
+                    return;
+                }
+            }
+
             cv_.wait(lk, [this]() {
                 int idx = slot();
                 return permits_[idx] > 0;
